@@ -11,6 +11,7 @@ from select import select
 from tkinter import ttk
 from view_model import *
 from PIL import ImageTk, Image
+from sys import platform
 import os
    
  
