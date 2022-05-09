@@ -13,8 +13,7 @@ from view_model import *
 from PIL import ImageTk, Image
 import os
    
-  
-platform = "darwin"
+ 
 LARGEFONT =("Helvetica", 90) 
 MED_FONT =("ChicagoFLF", 70) 
 SCALE = 1
