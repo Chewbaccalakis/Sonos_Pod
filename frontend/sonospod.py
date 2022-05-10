@@ -11,10 +11,10 @@ from select import select
 from tkinter import ttk
 from view_model import *
 from PIL import ImageTk, Image
-from sys import platform
 import os
    
- 
+  
+platform = "darwin"
 LARGEFONT =("Helvetica", 90) 
 MED_FONT =("ChicagoFLF", 70) 
 SCALE = 1
@@ -238,6 +238,13 @@ class NowPlayingFrame(tk.Frame):
         self.track_label.set_text(now_playing['title'])
         self.artist_label.set_text(now_playing['artist'])
         self.album_label.set_text(now_playing['album'])
+        adjusted_progress_ms = now_playing['progress']
+        adjusted_remaining_ms = max(0, now_playing['duration'] - adjusted_progress_ms)
+        if self.update_time:
+            progress_txt = ":".join(str(timedelta(milliseconds=adjusted_progress_ms)).split('.')[0].split(':')[1:3])
+            remaining_txt = "-" + ":".join(str(timedelta(milliseconds=adjusted_remaining_ms)).split('.')[0].split(':')[1:3])
+            self.elapsed_time.configure(text=progress_txt)
+            self.remaining_time.configure(text=remaining_txt)
 
 class StartPage(tk.Frame): 
     def __init__(self, parent, controller):  

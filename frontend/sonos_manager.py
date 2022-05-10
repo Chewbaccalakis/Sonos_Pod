@@ -6,7 +6,7 @@ import soco
 from soco import *
 
 
-device = SoCo("192.168.5.166")
+device = None
 
 DATASTORE = datastore.Datastore()
 
@@ -24,7 +24,7 @@ def check_internet(request):
 	return result
 
 def get_now_playing():
-	response = check_internet(lambda: sp.current_playback(additional_types='episode'))
+	response = check_internet()
 	if (not response):
 		return get_now_playing_track()
 
@@ -38,7 +38,9 @@ def get_now_playing_track():
 		'title': device.get_current_track_info()['title'],
 		'artist': device.get_current_track_info()['artist'],
 		'album': device.get_current_track_info()['album'],
-		'is_playing': device.get_current_transport_info()['current_transport_state']
+		'is_playing': device.get_current_transport_info()['current_transport_state'],
+		'progress': device.get_current_track_info()['position'],
+		'duration': device.get_current_track_info()['duration']
 	}
 	return now_playing
 
@@ -63,6 +65,17 @@ def get_now_playing_episode(response = None):
 	}
 	
 	return now_playing
+
+def set_current_device(wanteddevice):
+	print("New Device Selected")
+	global device
+	device = wanteddevice
+	refresh_now_playing()
+
+def set_current_volume(wantedvolume):
+	volume = wantedvolume
+	device.ramp_to_volume(volume)
+	print('New Volume:' + volume)
 
 def refresh_now_playing():
 	DATASTORE.now_playing = get_now_playing()

@@ -1,6 +1,8 @@
 import sonos_manager
 import re as re
 from functools import lru_cache 
+from subprocess import call
+from soco import *
 
 MENU_PAGE_SIZE = 6
 
@@ -13,6 +15,8 @@ SEARCH_RENDER = 2
 LINE_NORMAL = 0
 LINE_HIGHLIGHT = 1
 LINE_TITLE = 2
+
+title = None
 
 class LineItem():
     def __init__(self, title = "", line_type = LINE_NORMAL, show_arrow = False):
@@ -198,12 +202,15 @@ class PlaceHolderPage(MenuPage):
 
 class RootPage(MenuPage):
     def __init__(self, previous_page):
-        super().__init__("Sonos Pod", previous_page, has_sub_page=True)
-        self.pages = [
-            NowPlayingPage(self, "Now Playing", NowPlayingCommand())
-        ]
+        super().__init__("Spotify Pod", previous_page, has_sub_page=True)
         self.index = 0
         self.page_start = 0
+        self.pages = [
+            NowPlayingPage(self, "Now Playing", NowPlayingCommand()),
+            VolumePage(self),
+            DevicePage(self)
+        ]
+
     
     def get_pages(self):
         return self.pages
@@ -214,4 +221,59 @@ class RootPage(MenuPage):
     def page_at(self, index):
         return self.get_pages()[index]
 
+class DevicePage(MenuPage):
+    def __init__(self, previous_page):
+        super().__init__("Devices", previous_page, has_sub_page=True)
+        self.devices = self.get_content()
 
+    def get_content(self):
+        return list(discover())
+
+    def total_size(self):
+        return len(self.get_content())
+
+    def page_at(self, index):
+        device = self.devices
+        return DeviceSelect(device[index], self)
+
+class DeviceSelect(MenuPage):
+    def __init__(self, device, previous_page):
+        super().__init__(device.player_name, previous_page, has_sub_page=True)
+        self.device = device
+
+    def page_at(self, index):
+        wanteddevice = self.device
+        sonos_manager.set_current_device(wanteddevice)
+        return RootPage(None)
+
+class VolumePage(MenuPage):
+    def __init__(self, previous_page):
+        super().__init__(self.get_title(), previous_page, has_sub_page=True)
+        self.volumecontent = self.get_content()
+        self.numvolume = len(self.volumecontent)
+
+    def get_title(self):
+        return "Volume"
+
+    def get_content(self):
+        #volumelist = [*range(0, 101, 50)]
+        volumelist = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
+        return volumelist
+
+    def total_size(self):
+        return self.numvolume
+
+    def page_at(self, index):
+        volumecontent = self.volumecontent
+        return VolumeSelect(volumecontent[index], self)
+
+class VolumeSelect(MenuPage):
+    def __init__(self, volumecontent, previous_page):
+        super().__init__(volumecontent, previous_page, has_sub_page=True)
+        self.volume = volumecontent
+
+
+    def page_at(self, index):
+        wantedvolume = self.volume
+        sonos_manager.set_current_volume(wantedvolume)
+        return RootPage(None)
