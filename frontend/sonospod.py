@@ -11,10 +11,10 @@ from select import select
 from tkinter import ttk
 from view_model import *
 from PIL import ImageTk, Image
+from sys import platform
 import os
    
   
-platform = "darwin"
 LARGEFONT =("Helvetica", 90) 
 MED_FONT =("ChicagoFLF", 70) 
 SCALE = 1
